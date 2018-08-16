@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper  namespace="mapper.AdminerMapper">
+	<update id="delUser" parameterType="java.lang.String">
+		UPDATE user_info
+		SET delete_mark = '1'
+		WHERE
+			account = #{value}
+	</update>
+	
+	<select id="queryAllUsers" resultMap="resultToUser">
+		SELECT
+			account,nick
+		FROM
+			user_info
+		WHERE
+			delete_mark = '0'
+	</select>
+	
+	<select id="queryOneUser" parameterType="java.lang.String" resultType="pojo.User">
+		SELECT
+			*
+		FROM
+			user_info
+		WHERE
+			delete_mark = '0'
+		AND account = #{value}
+	</select>
+	<insert id="sendInform" parameterType="java.util.Map">
+		INSERT INTO checktable (cardId, inform, checkTime)
+		VALUES
+			(
+				#{cardId},
+				#{inform},
+				#{checkTime}
+			)
+	</insert>
+	<update id="updateCheck" parameterType="java.util.Map">
+		UPDATE cards
+		SET checkmark = #{checkmark}
+		WHERE
+			cardId = #{cardId}
+	</update>
+	
+	<resultMap type="pojo.User" id="resultToUser">
+		<id column="account" property = "account"/>
+		<result column="nick" property="nick"/>
+	</resultMap>
+</mapper>

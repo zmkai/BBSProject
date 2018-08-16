@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="mapper.CardMapper">
+	<insert id="insertCard" parameterType="pojo.Card">
+		<!--  
+		<selectKey keyColumn="cardId" keyProperty="cardId" order="AFTER">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		-->
+		INSERT INTO cards (
+			id,
+			author,
+			title,
+			content,
+			publicTime,
+			delmark,
+			checkmark
+		)
+		VALUES
+			(
+				#{typicId},
+				#{author},
+				#{title},
+				#{content},
+				#{publicTime},
+				#{delmark},
+				#{checkmark}
+			)
+	</insert>
+	
+	<select id="findCardRepeat" parameterType="java.util.Map" resultType="int">
+		SELECT
+			count(*) as number
+		FROM
+			cards
+		<where>
+			<if test="#{title}!=null">
+				AND title = #{title}
+			</if>
+			<if test="#{author}!=null">
+				AND author = #{author}
+			</if>
+			<include refid="cardDelMark"></include>
+		</where>
+	</select>
+	
+	<select id="queryCheckList" parameterType="java.lang.String" resultType="pojo.CardExpand">
+		SELECT
+			C.cardId cardId,
+			C.title title,
+			B.topic topic,
+			C.publicTime publicTime
+		FROM
+			cards C,
+			bbstopic B
+			<where>
+				C.author = #{value}
+				AND C.id = B.id
+				AND checkmark = '1'
+				<include refid="cardDelMark"></include>
+			</where>
+	</select>
+	<update id="delCardById" parameterType="int">
+		UPDATE cards
+		SET delmark = '1'
+		WHERE
+			cardId = #{value}
+	</update>
+	
+	<insert id="insertComment" parameterType="java.util.Map">
+		<selectKey keyColumn=""></selectKey>
+		INSERT INTO comments(account,cardId,content,submittime)
+		VALUES
+			(
+				#{account},
+				#{cardId},
+				#{content},
+				#{submittime}
+			)
+	</insert>
+	
+	<sql id="cardDelMark">
+		AND delmark='0'
+	</sql>
+</mapper>

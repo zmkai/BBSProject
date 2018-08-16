@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "mybatis-3-mapper.dtd" >
+<mapper namespace="mapper.UserMapper">
+	<!-- 插入用户信息 -->
+	<insert id="insertUser" parameterType="pojo.User">
+	INSERT INTO user_info
+	VALUES
+		(
+			#{account},
+			#{nick},
+			#{role},
+			#{password},
+			#{sex},
+			#{uemail},
+			#{signature},
+			#{tel},
+			#{stopmark},
+			#{delete_mark}
+		)
+	</insert>
+	<!-- 用户登录 -->
+	<select id="userLogin" parameterType="java.lang.String" resultMap="mapperToUser">
+		SELECT
+		account,
+		stopmark,
+		nick
+	FROM
+		user_info
+	<where>
+		<if test="#{account}!=null">
+			and account = #{account}
+		</if>
+		<if test="#{password}!=null">
+			and password = #{password}
+		</if>
+		<include refid="del_mark"></include>
+	</where>
+	</select>
+	
+	<select id="queryCardInfo" parameterType="int" resultType="pojo.CardContent">
+		SELECT
+			C.cardId,
+		C.title,
+		C.content,
+		U.nick,
+		C.publicTime
+		FROM
+			cards C,
+			user_info U
+		<where>
+		
+			C.author = U.account
+		AND
+			cardId = #{value}
+			<include refid="del_mark"></include>
+			<include refid="checkmark"></include>
+		</where>
+	</select>
+	
+	<update id="stopUser" parameterType="java.lang.String">
+		UPDATE user_info
+		SET stopmark = '1'
+		<where>
+			account = #{value}
+			<include refid="del_mark"></include>		
+		</where>
+	</update>
+	
+	<select id="queryInfom" parameterType="java.lang.String" resultMap="resultToInform">
+		SELECT
+			CK.inform,
+			CK.checkTime
+		FROM
+			checktable CK,
+			cards C
+		WHERE
+			C.cardId = CK.cardId
+		AND C.author = #{value}
+	</select>
+	
+	<resultMap type="pojo.Inform" id="resultToInform">
+		<id column="id" property="id"/>
+		<result column="inform" property="inform"/>
+		<result column="checkTime" property="checkTime"/>
+	</resultMap>
+	<resultMap type="pojo.User" id="mapperToUser">
+		<result column="account" property="account"/>
+		<result column="stopmark" property="stopmark"/>
+		<result column="nick" property="nick"/>
+	</resultMap>
+	<!-- delete_mark = '0' 表示未删除的用户 -->
+	<sql id="del_mark">
+		and delete_mark = '0'
+	</sql>
+	<sql id="checkmark">
+		and checkmark = '0'
+	</sql>
+  
+</mapper>
